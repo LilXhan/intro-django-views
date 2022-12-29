@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<div class="container">
+  <h1>This is my first project with Django</h1>
+  <hr>
+  <h2>People</h2>
+  <ul>
+    {% for person in people %}
+    <li>{{ person.name }}</li>
+    {% endfor %}  
+  </ul>
+</div>
+
+{% endblock %}
