@@ -8,9 +8,17 @@
   <h2>People</h2>
   <ul>
     {% for person in people %}
-    <li>{{ person.name }}</li>
+    <li>{{ person.name }} - {{ person.email }}</li>
     {% endfor %}  
   </ul>
+
+  <!-- CreatedView -->
+  <form method="POST" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Crear</button>
+  </form>
+
 </div>
 
 {% endblock %}
