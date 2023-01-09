@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Person
-from django.views.generic import View, TemplateView, CreateView
+from .forms import PersonForm
+from django.views.generic import View, TemplateView, CreateView, FormView
 
 
 # Vistas o Views (Controladores)
@@ -58,14 +59,11 @@ class IndexView(View):
 
 class IndexTemplateView(TemplateView):
     template_name = 'index.html'
-    extra_context = {
-        'people': Person.objects.all()
-    }
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['people'] = Person.objects.all()
-    #     return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['people'] = Person.objects.all()
+        return context
 
 
 # Formulario Class View
@@ -74,8 +72,51 @@ class IndexCreateView(CreateView):
     template_name = 'index.html'
     fields = ['name', 'email', 'address']
     model = Person
+    success_url = '/myapp'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['people'] = Person.objects.all()
         return context
+
+
+class CreatePerson(View):
+
+    def get(self, request):
+        form = PersonForm()
+
+        context = {
+            'form': form
+        }
+
+        return render(request, 'form.html', context)
+
+    def post(self, request):
+        # vamos a poder acceder a la informacion enviada por el formulario de html
+        form = PersonForm(request.POST)
+        
+        if form.is_valid():
+            # accediendo a el input de los inputs
+            cleaned_data = form.cleaned_data
+            person = Person.objects.create(**cleaned_data)
+            person.save()
+
+            return redirect('index')
+
+
+class PersonCreateForm(FormView):
+    template_name = 'form.html'
+    form_class = PersonForm
+
+    # para guardar la informacion existe una función que se encarga de verificar si el formulario
+    # es valido -> def form_valid()
+
+    def form_valid(self, form):
+        cleaned_data = form.cleaned_data
+        person = Person.objects.create(**cleaned_data)
+        person.save()
+        return redirect('index')
+
+    def form_invalid(self, form):
+        print('erros ->', form.errors)
+        return redirect('index')
