@@ -3,7 +3,9 @@ from django.http import HttpResponse
 from .models import Person
 from .forms import PersonForm
 from django.views.generic import View, TemplateView, CreateView, FormView
+from django.core import serializers
 
+import json
 
 # Vistas o Views (Controladores)
 
@@ -42,7 +44,18 @@ def index_three(request):
 class IndexView(View):
     # tiene los metodos predefinidos
     def get(self, request):
-        people = Person.objects.all()
+        # print(request.session.get('people_name'))
+        # request.session['people_name'] = people[0].name
+
+        people_session = json.loads(request.session.get('people'))
+
+        for person in people_session:
+            print(person['fields']['name'])
+
+        people = Person.objects.all()        
+
+        # Convertir de query set a json para guardarlo en una cockie o cache
+        request.session['people'] = serializers.serialize('json', people) 
 
         context = {
             'people': people 
