@@ -47,16 +47,22 @@ class IndexView(View):
         # print(request.session.get('people_name'))
         # request.session['people_name'] = people[0].name
 
-        people_session = json.loads(request.session.get('people'))
+        # Recomendado para data que no cambia o cambia rara vez 
+        # -> como paises, ciudades, codigos de pais, etc
 
-        for person in people_session:
-            print(person['fields']['name'])
+        people = []
 
-        people = Person.objects.all()        
+        if request.session.get('people'):
+            people_session = json.loads(request.session.get('people'))
 
-        # Convertir de query set a json para guardarlo en una cockie o cache
-        request.session['people'] = serializers.serialize('json', people) 
+            for person in people_session:
+                people.append(person['fields'])
 
+        if len(people) == 0:
+            people = Person.objects.all()        
+            # Convertir de query set a json para guardarlo en una cockie o cache
+            request.session['people'] = serializers.serialize('json', people) 
+    
         context = {
             'people': people 
         }
@@ -75,7 +81,21 @@ class IndexTemplateView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['people'] = Person.objects.all()
+
+        people = []
+
+        if self.request.session.get('people'):
+            people_session = json.loads(self.request.session.get('people'))
+            for person in people_session:
+                people.append(person['fields'])
+
+        if len(people) == 0:
+            people_query = Person.objects.all()
+            self.request.session['people'] = serializers.serialize('json', people_query)
+
+        print(people)
+
+        context['people'] = people
         return context
 
 
